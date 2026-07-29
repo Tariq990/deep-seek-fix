@@ -6,7 +6,7 @@ Build a model-independent reliability control plane for inexpensive coding model
 
 ## Current State
 
-Initial implementation is in progress. The repository contains the core Python package, CLI/API surfaces, policy/evidence/verification modules, persisted repeated-action loop detection, an OpenCode plugin scaffold, adversarial tests, Harbor smoke data, Promptfoo deterministic fixtures, and CI configuration.
+Initial implementation is in progress. The repository contains the core Python package, CLI/API surfaces, policy/evidence/verification modules, persisted repeated-action loop detection, redacted evidence output snapshots for claim verification, an OpenCode plugin scaffold, adversarial tests, Harbor smoke data, Promptfoo deterministic fixtures, and CI configuration.
 
 ## Commands
 
@@ -26,7 +26,7 @@ python scripts/verified_push.py --dry-run
 
 ## Current Test Counts
 
-- Python full suite: 76 tests expected after loop-detection work.
+- Python full suite: 80 tests expected after claim-verification hardening.
 - Adversarial suite: 51 tests.
 - OpenCode plugin: 3 Vitest tests.
 - Harbor smoke: 12 cases, expected false pass count 0.

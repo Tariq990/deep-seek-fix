@@ -131,6 +131,8 @@ class GovernedExecutor:
                 capture_output=True,
                 timeout=request.timeout_seconds,
             )
+            stdout_truncated = len(completed.stdout) > request.output_limit_bytes
+            stderr_truncated = len(completed.stderr) > request.output_limit_bytes
             stdout_raw = completed.stdout[: request.output_limit_bytes]
             stderr_raw = completed.stderr[: request.output_limit_bytes]
             exit_code = completed.returncode
@@ -138,15 +140,21 @@ class GovernedExecutor:
             timed_out = True
             stdout_raw = (exc.stdout or b"")[: request.output_limit_bytes]
             stderr_raw = (exc.stderr or b"")[: request.output_limit_bytes] + b"\nTIMEOUT"
+            stdout_truncated = len(exc.stdout or b"") > request.output_limit_bytes
+            stderr_truncated = len(exc.stderr or b"") > request.output_limit_bytes
             exit_code = 124
         except FileNotFoundError as exc:
             stdout_raw = b""
             stderr_raw = str(exc).encode("utf-8", errors="replace")
+            stdout_truncated = False
+            stderr_truncated = False
             exit_code = 127
         finished = datetime.now(UTC)
 
         stdout_text = stdout_raw.decode("utf-8", errors="replace")
         stderr_text = stderr_raw.decode("utf-8", errors="replace")
+        stdout_redacted = redact_secrets(stdout_text)
+        stderr_redacted = redact_secrets(stderr_text)
         record = EvidenceRecord(
             evidence_id=new_evidence_id(),
             task_id=task_id,
@@ -162,14 +170,18 @@ class GovernedExecutor:
             exit_code=exit_code,
             stdout_sha256=safe_output_hash(stdout_text),
             stderr_sha256=safe_output_hash(stderr_text),
+            stdout_redacted=stdout_redacted,
+            stderr_redacted=stderr_redacted,
+            stdout_truncated=stdout_truncated,
+            stderr_truncated=stderr_truncated,
             artifact_paths=[],
         )
         self.ledger.append(record)
         return ExecutionResult(
             evidence_id=record.evidence_id,
             exit_code=exit_code,
-            stdout=redact_secrets(stdout_text),
-            stderr=redact_secrets(stderr_text),
+            stdout=stdout_redacted,
+            stderr=stderr_redacted,
             policy_effect=policy_result.effect,
             policy_reasons=[],
             timed_out=timed_out,

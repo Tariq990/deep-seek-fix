@@ -24,6 +24,10 @@ class EvidenceRecord(BaseModel):
     exit_code: int
     stdout_sha256: str = Field(pattern=r"^sha256:[a-f0-9]{64}$")
     stderr_sha256: str = Field(pattern=r"^sha256:[a-f0-9]{64}$")
+    stdout_redacted: str = ""
+    stderr_redacted: str = ""
+    stdout_truncated: bool = False
+    stderr_truncated: bool = False
     artifact_paths: list[str] = Field(default_factory=list)
     classification: Classification = Classification.COMMAND_RESULT
 

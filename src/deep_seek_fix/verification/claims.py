@@ -53,9 +53,24 @@ ZERO_TEST_PATTERNS = [
     re.compile(r"\bno\s+tests?\s+(ran|found)\b", re.IGNORECASE),
 ]
 
+NOT_EXECUTED_PATTERNS = [
+    re.compile(r"\bcollected\b.*\b0\s+items\b", re.IGNORECASE | re.DOTALL),
+    re.compile(r"\bdeselected\b", re.IGNORECASE),
+    re.compile(r"\bnot\s+found\b", re.IGNORECASE),
+    re.compile(r"\bno\s+tests?\s+(ran|found)\b", re.IGNORECASE),
+]
+
 
 def output_mentions_zero_tests(output: str) -> bool:
     return any(pattern.search(output) for pattern in ZERO_TEST_PATTERNS)
+
+
+def output_mentions_not_executed(output: str) -> bool:
+    return any(pattern.search(output) for pattern in NOT_EXECUTED_PATTERNS)
+
+
+def combined_output(record: EvidenceRecord) -> str:
+    return "\n".join(part for part in [record.stdout_redacted, record.stderr_redacted] if part)
 
 
 def command_matches_claim(command: str, claim_type: ClaimType) -> bool:
@@ -112,12 +127,32 @@ class ClaimVerifier:
         }:
             if not records:
                 reasons.append("no test command evidence")
-            if any(output_mentions_zero_tests(record.command) for record in records):
-                reasons.append("zero executed tests cannot verify a test claim")
+            for record in records:
+                output = combined_output(record)
+                if not output.strip():
+                    reasons.append(f"empty output cannot verify test claim: {record.evidence_id}")
+                if output_mentions_zero_tests(output):
+                    reasons.append(
+                        f"zero executed tests cannot verify a test claim: {record.evidence_id}"
+                    )
+                if output_mentions_not_executed(output):
+                    reasons.append(
+                        f"collected-but-not-executed tests cannot verify claim: "
+                        f"{record.evidence_id}"
+                    )
+                if record.stdout_truncated or record.stderr_truncated:
+                    reasons.append(
+                        f"truncated output cannot verify test claim: {record.evidence_id}"
+                    )
         if claim.claim_type == ClaimType.REQUIRED_TESTS_EXECUTED:
-            commands = " ".join(record.command for record in records)
+            proof_parts: list[str] = []
+            for record in records:
+                proof_parts.extend(
+                    [record.command, record.normalized_command, combined_output(record)]
+                )
+            proof_text = "\n".join(proof_parts)
             for required in self.contract.required_tests:
-                if required not in commands:
+                if required not in proof_text:
                     reasons.append(f"required test node id absent: {required}")
 
         verdict = FinalVerdict.VERIFIED_FAIL if reasons else FinalVerdict.VERIFIED_PASS

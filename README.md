@@ -6,6 +6,8 @@ It does not make any language model mathematically incapable of error. Instead, 
 
 The executor also blocks repeated failed actions when the command, repository state, and prior failure classification match the task contract's loop threshold. This prevents blind "try again" loops from creating new evidence without a meaningful state change.
 
+Evidence records include bounded redacted stdout/stderr snapshots in addition to hashes. Claim verification uses those snapshots to reject zero-test output, truncated test output, and missing required test node IDs.
+
 ## Architecture
 
 ```text
