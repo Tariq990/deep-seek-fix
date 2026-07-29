@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 import subprocess  # nosec B404
 from datetime import UTC, datetime
 from pathlib import Path
@@ -87,8 +88,10 @@ class GovernedExecutor:
         started = datetime.now(UTC)
         timed_out = False
         try:
+            executable = shutil.which(request.command[0]) or request.command[0]
+            command = [executable, *request.command[1:]]
             completed = subprocess.run(  # nosec B603
-                request.command,
+                command,
                 cwd=cwd,
                 shell=False,
                 check=False,
@@ -103,6 +106,10 @@ class GovernedExecutor:
             stdout_raw = (exc.stdout or b"")[: request.output_limit_bytes]
             stderr_raw = (exc.stderr or b"")[: request.output_limit_bytes] + b"\nTIMEOUT"
             exit_code = 124
+        except FileNotFoundError as exc:
+            stdout_raw = b""
+            stderr_raw = str(exc).encode("utf-8", errors="replace")
+            exit_code = 127
         finished = datetime.now(UTC)
 
         stdout_text = stdout_raw.decode("utf-8", errors="replace")
