@@ -18,6 +18,15 @@ def split_command(command: str) -> list[str]:
     return shlex.split(command, posix=os.name != "nt")
 
 
+def safe_print(text: str) -> None:
+    encoding = sys.stdout.encoding or "utf-8"
+    safe_text = text.encode(encoding, errors="backslashreplace").decode(
+        encoding,
+        errors="replace",
+    )
+    print(safe_text)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--contract", default="contract.json")
@@ -40,7 +49,7 @@ def main() -> int:
             task_id=contract.task_id,
             run_id=args.run_id,
         )
-        print(result.model_dump_json(indent=2))
+        safe_print(result.model_dump_json(indent=2))
         if result.exit_code != 0:
             return result.exit_code
     return 0
