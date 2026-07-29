@@ -1,0 +1,11 @@
+schema_version: "1.0"
+fail_closed: true
+events:
+  - session.created
+  - event
+  - tool.execute.before
+  - tool.execute.after
+  - tool.execute.error
+control_plane_required: true
+deny_on_malformed_response: true
+

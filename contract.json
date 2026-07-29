@@ -1,0 +1,53 @@
+{
+  "acceptance_criteria": [],
+  "allowed_paths": [
+    "src/deep_seek_fix/api",
+    "src/deep_seek_fix/cli",
+    "src/deep_seek_fix/contracts",
+    "src/deep_seek_fix/evidence",
+    "src/deep_seek_fix/execution",
+    "src/deep_seek_fix/gates",
+    "src/deep_seek_fix/providers",
+    "src/deep_seek_fix/routing",
+    "src/deep_seek_fix/storage",
+    "src/deep_seek_fix/tracing",
+    "tests",
+    "packages",
+    "policies",
+    "benchmarks",
+    "evals",
+    "docs",
+    "scripts"
+  ],
+  "contract_hash": "sha256:e53a325a34e24b62539a9e024f9746ee6bacd9b9224433caad652d4eeb1d7b12",
+  "created_at": "2026-07-29T10:02:45.508294Z",
+  "forbidden_commands": [],
+  "maximum_cost_usd": 5.0,
+  "maximum_repeated_action_count": 1,
+  "maximum_steps": 100,
+  "network_policy": "deny_by_default",
+  "non_goals": [],
+  "objective": "Initial production-oriented Deep Seek Fix control-plane implementation",
+  "protected_paths": [
+    "contract.json",
+    ".dsfix",
+    "src/deep_seek_fix/verification",
+    "src/deep_seek_fix/policies"
+  ],
+  "required_commands": [
+    "uv run ruff check .",
+    "uv run ruff format --check .",
+    "uv run mypy src",
+    "uv run pytest",
+    "uv run pytest tests/adversarial",
+    "pnpm check",
+    "uv run python -m compileall src",
+    "uv run dsfix benchmark smoke",
+    "git diff --check"
+  ],
+  "required_tests": [
+    "tests/adversarial"
+  ],
+  "schema_version": "1.0",
+  "task_id": "TASK-INITIAL"
+}

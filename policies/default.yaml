@@ -1,0 +1,20 @@
+schema_version: "1.0"
+default_effect: DENY
+required_fields:
+  command: required_list
+  cwd: required_string
+  writes: list
+rules:
+  - id: deny-force-push
+    effect: DENY
+    contains: ["git push --force", "git push --force-with-lease"]
+  - id: deny-no-verify
+    effect: DENY
+    contains: ["--no-verify"]
+  - id: deny-amend
+    effect: DENY
+    contains: ["git commit --amend"]
+  - id: deny-secret-printing
+    effect: DENY
+    contains: ["printenv", "Get-ChildItem Env:", "env"]
+
