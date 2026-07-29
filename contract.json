@@ -1,6 +1,8 @@
 {
   "acceptance_criteria": [],
   "allowed_paths": [
+    ".github",
+    ".githooks",
     "src/deep_seek_fix/api",
     "src/deep_seek_fix/cli",
     "src/deep_seek_fix/contracts",
@@ -17,10 +19,19 @@
     "benchmarks",
     "evals",
     "docs",
-    "scripts"
+    "scripts",
+    "package.json",
+    "pnpm-workspace.yaml",
+    "pnpm-lock.yaml",
+    "pyproject.toml",
+    "uv.lock",
+    "Makefile",
+    "docker-compose.yml",
+    "README.md",
+    "HANDOFF.md"
   ],
-  "contract_hash": "sha256:e53a325a34e24b62539a9e024f9746ee6bacd9b9224433caad652d4eeb1d7b12",
-  "created_at": "2026-07-29T10:02:45.508294Z",
+  "contract_hash": "sha256:6728fa41e1d6b7ccb014538a6f4e1491eaa9ea4bfd5755baf3e2c16c9f6116fd",
+  "created_at": "2026-07-29T10:24:32.077312Z",
   "forbidden_commands": [],
   "maximum_cost_usd": 5.0,
   "maximum_repeated_action_count": 1,
