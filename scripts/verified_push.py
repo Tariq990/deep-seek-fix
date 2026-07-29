@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import sys
 from pathlib import Path
 
-from deep_seek_fix.git_state import is_worktree_clean, repository_head_sha
-from deep_seek_fix.types import FinalVerdict
-from deep_seek_fix.verification.claims import classify_push
-from deep_seek_fix.verification.delivery import verify_delivery
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+
+from deep_seek_fix.git_state import is_worktree_clean, repository_head_sha  # noqa: E402
+from deep_seek_fix.types import FinalVerdict  # noqa: E402
+from deep_seek_fix.verification.claims import classify_push  # noqa: E402
+from deep_seek_fix.verification.delivery import verify_delivery  # noqa: E402
 
 
 def run_git(repo: Path, args: list[str]) -> tuple[int, str, str]:
