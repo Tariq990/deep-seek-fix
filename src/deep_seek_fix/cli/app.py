@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import platform
 import shutil
+import sys
 from pathlib import Path
 from typing import Annotated
 
@@ -40,6 +41,15 @@ def default_ledger_path() -> Path:
     return repo_path() / ".dsfix" / "evidence.sqlite3"
 
 
+def safe_echo(text: str) -> None:
+    encoding = sys.stdout.encoding or "utf-8"
+    safe_text = text.encode(encoding, errors="backslashreplace").decode(
+        encoding,
+        errors="replace",
+    )
+    typer.echo(safe_text)
+
+
 @app.command()
 def doctor() -> None:
     info = {
@@ -50,7 +60,7 @@ def doctor() -> None:
         "pnpm": shutil.which("pnpm") is not None,
         "git": shutil.which("git") is not None,
     }
-    typer.echo(json.dumps(info, indent=2, sort_keys=True))
+    safe_echo(json.dumps(info, indent=2, sort_keys=True))
 
 
 @app.command()
@@ -77,18 +87,18 @@ def contract_create(
         required_commands=required_command or [],
         required_tests=required_test or [],
     )
-    typer.echo(contract.model_dump_json(indent=2))
+    safe_echo(contract.model_dump_json(indent=2))
 
 
 @contract_app.command("validate")
 def contract_validate(path: Path) -> None:
     contract = load_contract(path)
-    typer.echo(contract.model_dump_json(indent=2))
+    safe_echo(contract.model_dump_json(indent=2))
 
 
 @contract_app.command("show")
 def contract_show(path: Path) -> None:
-    typer.echo(load_contract(path).model_dump_json(indent=2))
+    safe_echo(load_contract(path).model_dump_json(indent=2))
 
 
 @contract_app.command("hash")
@@ -98,7 +108,7 @@ def contract_hash(path: Path) -> None:
 
 @contract_app.command("schema")
 def contract_schema() -> None:
-    typer.echo(contract_schema_json())
+    safe_echo(contract_schema_json())
 
 
 @run_app.command("command")
@@ -118,7 +128,7 @@ def run_command(
         task_id=task_id,
         run_id=run_id,
     )
-    typer.echo(result.model_dump_json(indent=2))
+    safe_echo(result.model_dump_json(indent=2))
 
 
 @run_app.command("task")
@@ -129,12 +139,12 @@ def run_task() -> None:
 @run_app.command("status")
 def run_status(run_id: str) -> None:
     records = EvidenceLedger.from_path(default_ledger_path()).list(run_id=run_id)
-    typer.echo(json.dumps({"run_id": run_id, "evidence_count": len(records)}, indent=2))
+    safe_echo(json.dumps({"run_id": run_id, "evidence_count": len(records)}, indent=2))
 
 
 @run_app.command("cancel")
 def run_cancel(run_id: str) -> None:
-    typer.echo(json.dumps({"run_id": run_id, "status": "cancel_requested"}, indent=2))
+    safe_echo(json.dumps({"run_id": run_id, "status": "cancel_requested"}, indent=2))
 
 
 @policy_app.command("check")
@@ -142,25 +152,25 @@ def policy_check(contract_path: Path, command: list[str]) -> None:
     contract = load_contract(contract_path)
     request = PolicyRequest(command=command, cwd=str(repo_path()), writes=[])
     result = CombinedPolicyEngine().evaluate(request, contract, repo_path())
-    typer.echo(result.model_dump_json(indent=2))
+    safe_echo(result.model_dump_json(indent=2))
 
 
 @evidence_app.command("list")
 def evidence_list(run_id: str | None = None) -> None:
     records = EvidenceLedger.from_path(default_ledger_path()).list(run_id=run_id)
-    typer.echo(json.dumps([record.model_dump(mode="json") for record in records], indent=2))
+    safe_echo(json.dumps([record.model_dump(mode="json") for record in records], indent=2))
 
 
 @evidence_app.command("show")
 def evidence_show(evidence_id: str) -> None:
     record = EvidenceLedger.from_path(default_ledger_path()).get(evidence_id)
-    typer.echo(record.model_dump_json(indent=2))
+    safe_echo(record.model_dump_json(indent=2))
 
 
 @evidence_app.command("verify")
 def evidence_verify(evidence_id: str) -> None:
     record = EvidenceLedger.from_path(default_ledger_path()).get(evidence_id)
-    typer.echo(
+    safe_echo(
         json.dumps({"evidence_id": record.evidence_id, "exit_code": record.exit_code}, indent=2)
     )
 
@@ -168,12 +178,12 @@ def evidence_verify(evidence_id: str) -> None:
 @evidence_app.command("verify-run")
 def evidence_verify_run(run_id: str) -> None:
     records = EvidenceLedger.from_path(default_ledger_path()).list(run_id=run_id)
-    typer.echo(json.dumps({"run_id": run_id, "evidence_count": len(records)}, indent=2))
+    safe_echo(json.dumps({"run_id": run_id, "evidence_count": len(records)}, indent=2))
 
 
 @verify_app.command("claims")
 def verify_claims() -> None:
-    typer.echo(
+    safe_echo(
         json.dumps({"verdict": "INCOMPLETE", "reason": "claim file input is planned"}, indent=2)
     )
 
@@ -184,7 +194,7 @@ def verify_delivery_command(
     ledger_path: Path = Path(".dsfix/evidence.sqlite3"),
 ) -> None:
     report = verify_delivery(repo_path(), contract_path, ledger_path)
-    typer.echo(report.model_dump_json(indent=2))
+    safe_echo(report.model_dump_json(indent=2))
     if report.verdict != "VERIFIED_PASS":
         raise typer.Exit(1)
 
@@ -194,7 +204,7 @@ def benchmark_smoke(
     dataset: Path = Path("benchmarks/harbor/deep-seek-fix/dataset/smoke.json"),
 ) -> None:
     report = smoke_report(dataset)
-    typer.echo(report.model_dump_json(indent=2))
+    safe_echo(report.model_dump_json(indent=2))
     if report.false_pass_count != 0:
         raise typer.Exit(1)
 
