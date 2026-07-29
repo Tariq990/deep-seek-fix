@@ -10,6 +10,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from deep_seek_fix.contracts.model import TaskContract
 from deep_seek_fix.evidence.ledger import EvidenceLedger
 from deep_seek_fix.evidence.models import EvidenceRecord, new_evidence_id
+from deep_seek_fix.execution.loops import (
+    ActionFingerprint,
+    classify_failed_action,
+    command_tool_name,
+)
 from deep_seek_fix.git_state import repository_head_sha, working_tree_hash
 from deep_seek_fix.policies.engine import CombinedPolicyEngine, PolicyEffect, PolicyRequest
 from deep_seek_fix.security import environment_fingerprint, redact_secrets, safe_output_hash
@@ -85,6 +90,34 @@ class GovernedExecutor:
                 policy_reasons=[],
             )
 
+        current_tree_hash = working_tree_hash(self.repo)
+        prior_failures = self.ledger.failed_repetitions(
+            run_id=run_id,
+            normalized_command=policy_result.normalized_command,
+            working_tree_hash=current_tree_hash,
+        )
+        if len(prior_failures) >= contract.maximum_repeated_action_count:
+            previous = prior_failures[-1]
+            fingerprint = ActionFingerprint(
+                tool_name=command_tool_name(request.command),
+                normalized_arguments=request.command[1:],
+                relevant_state_hash=current_tree_hash,
+                previous_result_classification=classify_failed_action(
+                    previous.normalized_command,
+                    previous.exit_code,
+                    "",
+                ),
+            )
+            reason = f"MODEL_LOOP blocked repeated failed action: {fingerprint.digest()}"
+            return ExecutionResult(
+                evidence_id=None,
+                exit_code=125,
+                stdout="",
+                stderr=reason,
+                policy_effect=PolicyEffect.DENY,
+                policy_reasons=[reason],
+            )
+
         started = datetime.now(UTC)
         timed_out = False
         try:
@@ -120,7 +153,7 @@ class GovernedExecutor:
             run_id=run_id,
             contract_hash=contract.computed_hash(),
             repository_head_sha=repository_head_sha(self.repo),
-            working_tree_hash=working_tree_hash(self.repo),
+            working_tree_hash=current_tree_hash,
             environment_hash=environment_fingerprint(),
             command=" ".join(request.command),
             normalized_command=policy_result.normalized_command,

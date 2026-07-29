@@ -4,6 +4,8 @@ Deep Seek Fix is a deterministic reliability control plane for inexpensive codin
 
 It does not make any language model mathematically incapable of error. Instead, it keeps the model out of the trust boundary: the model proposes actions, deterministic code authorizes tool use, and deterministic evidence decides whether work can be delivered.
 
+The executor also blocks repeated failed actions when the command, repository state, and prior failure classification match the task contract's loop threshold. This prevents blind "try again" loops from creating new evidence without a meaningful state change.
+
 ## Architecture
 
 ```text
@@ -62,4 +64,3 @@ Harbor adapter files are under `benchmarks/harbor/deep-seek-fix`. Promptfoo dete
 ## Limitations
 
 Tests only cover encoded requirements. LLM judges, when used later, are advisory. Provider behavior can change. Microsoft Agent Governance Toolkit is treated as defense-in-depth because it is a public-preview dependency. ZCode support is deferred until its extension interface is verified.
-

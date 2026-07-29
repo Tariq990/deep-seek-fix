@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import builtins
 import json
 from pathlib import Path
 
@@ -54,10 +55,25 @@ class EvidenceLedger:
                 raise KeyError(evidence_id)
             return EvidenceRecord.model_validate_json(row.payload)
 
-    def list(self, run_id: str | None = None) -> list[EvidenceRecord]:
+    def list(self, run_id: str | None = None) -> builtins.list[EvidenceRecord]:
         with Session(self.engine) as session:
             rows = session.scalars(select(EvidenceRow).order_by(EvidenceRow.sequence)).all()
         records = [EvidenceRecord.model_validate_json(row.payload) for row in rows]
         if run_id is not None:
             return [record for record in records if record.run_id == run_id]
         return records
+
+    def failed_repetitions(
+        self,
+        *,
+        run_id: str,
+        normalized_command: str,
+        working_tree_hash: str,
+    ) -> builtins.list[EvidenceRecord]:
+        return [
+            record
+            for record in self.list(run_id=run_id)
+            if record.normalized_command == normalized_command
+            and record.working_tree_hash == working_tree_hash
+            and record.exit_code != 0
+        ]
