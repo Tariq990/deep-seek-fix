@@ -24,14 +24,41 @@ User task
 
 Final verdicts are limited to `VERIFIED_PASS`, `VERIFIED_FAIL`, `BLOCKED`, `INCOMPLETE`, and `UNKNOWN`.
 
-## Local Setup
+## Getting Started
+
+### Prerequisites
+
+- Python 3.12+
+- Node.js 22+
+- `uv`
+- pnpm 11.7.0, either directly or through Corepack
+
+### Clone and install
 
 ```powershell
+git clone https://github.com/Tariq990/deep-seek-fix.git
+cd deep-seek-fix
 uv sync --all-extras --dev
-pnpm install --frozen-lockfile
+corepack pnpm install --frozen-lockfile
 ```
 
-No live provider keys are needed for default tests or benchmark smoke runs.
+No live provider keys are needed for the default tests, deterministic benchmark smoke run, or delivery verification.
+
+### Verify the repository
+
+```powershell
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy src
+uv run pytest
+corepack pnpm --filter @deep-seek-fix/opencode-plugin check
+uv run python -m compileall src
+uv run dsfix benchmark smoke
+uv run python scripts/collect_evidence.py
+uv run dsfix verify delivery
+```
+
+The default Python test suite contains 80 tests and enforces a 70% coverage floor. Provider live tests remain opt-in.
 
 ## CLI
 
@@ -66,3 +93,7 @@ Harbor adapter files are under `benchmarks/harbor/deep-seek-fix`. Promptfoo dete
 ## Limitations
 
 Tests only cover encoded requirements. LLM judges, when used later, are advisory. Provider behavior can change. Microsoft Agent Governance Toolkit is treated as defense-in-depth because it is a public-preview dependency. ZCode support is deferred until its extension interface is verified.
+
+## License
+
+This repository is **source-available**, not OSI open source. It is licensed under the included **Personal Non-Commercial Software License 1.0**: personal, educational, evaluation, and other non-commercial use is permitted; commercial use and redistribution require prior written permission. Third-party dependencies remain under their own licenses.

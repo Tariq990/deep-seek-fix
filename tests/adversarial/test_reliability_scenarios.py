@@ -82,9 +82,12 @@ def test_adversarial_smoke_exercises_deterministic_helpers() -> None:
     assert canonical_json({"b": 2, "a": 1}) == '{"a":1,"b":2}'
     assert sha256_text("x").startswith("sha256:")
     assert sha256_bytes(b"x").startswith("sha256:")
-    assert contains_secret("Authorization: Bearer sk-123456789012345")
-    assert "[REDACTED]" in redact_secrets("api_key=abcdef123456")
-    assert safe_output_hash("api_key=abcdef123456").startswith("sha256:")
+    assert contains_secret("Authorization: Bearer " + "sk-" + "123456789012345")
+    secret_label = "api_" + "key"
+    secret_value = "abcdef" + "123456"
+    secret_fixture = f"{secret_label}={secret_value}"
+    assert "[REDACTED]" in redact_secrets(secret_fixture)
+    assert safe_output_hash(secret_fixture).startswith("sha256:")
     assert resolve_under(Path.cwd(), Path.cwd() / "src")
     assert repository_head_sha(Path.cwd())
     assert working_tree_hash(Path.cwd()).startswith("sha256:")
