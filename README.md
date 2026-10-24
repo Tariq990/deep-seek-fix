@@ -8,6 +8,16 @@ The executor also blocks repeated failed actions when the command, repository st
 
 Evidence records include bounded redacted stdout/stderr snapshots in addition to hashes. Claim verification uses those snapshots to reject zero-test output, truncated test output, and missing required test node IDs.
 
+## Start here — verify an AI agent's claims
+
+**Agent says done? Check the evidence.** Deep Seek Fix checks execution against task contracts, bounded evidence and deterministic verification gates. A passing test is only evidence for the requirements it covers; the tool does not promise zero hallucinations or universal agent correctness.
+
+- **New here?** Follow the [first verified run](docs/quickstart.md) — local, reproducible, and no API keys needed.
+- **Want to evaluate the approach?** Read the [architecture](docs/architecture.md), [evidence model](docs/evidence-model.md) and [limitations](docs/limitations.md).
+- **Want to contribute?** Start with [contribution guidance](CONTRIBUTING.md) and [security disclosure policy](SECURITY.md).
+
+> **License and distribution:** This repository is **source-available, not OSI-approved open source**. Personal, educational, evaluation and other non-commercial uses are permitted subject to the [Personal Non-Commercial Software License](LICENSE). Commercial use and redistribution require permission. Please check the license before adopting it in a workplace or integrating it into another distributable product.
+
 ## Architecture
 
 ```text
